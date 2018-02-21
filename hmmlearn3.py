@@ -56,10 +56,22 @@ for line in f:
 eg["q0"] = {}
 tg["q0"] = {}
 for node in first_tag_prob:
-    first_tag_prob[node] /= line_count
+    # first_tag_prob[node] /= line_count
     tg["q0"][node] = first_tag_prob[node]
 
 f.close()
+
+# add one smoothing
+tag_set = set()
+for tag in tg:
+    tag_set.add(tag)
+
+for tag in tg:
+    for ts in tag_set:
+        if ts not in tg[tag]:
+            tg[tag][ts] = 1
+        else:
+            tg[tag][ts] += 1
 
 # convert to probabilities
 for tag in tg:
@@ -80,14 +92,18 @@ for tag in eg:
     for wd in eg[tag]:
         eg[tag][wd] /= count
 
-#print("\nNumber of lines : " + str(line_count))
-#print("\nnumber of tags found : " + str(len(tg)))
+# print("\nNumber of lines : " + str(line_count))
+# print("\nnumber of tags found : " + str(len(tg)))
 
-with open('transitionMatrix.json', 'w', encoding='utf8') as fp:
-    json.dump(tg, fp, ensure_ascii=False)
+with open('hmmmodel.txt', 'w', encoding='utf8') as fp:
+    fp.write(json.dumps(tg, ensure_ascii=False))
+    fp.write("\n")
+    fp.write(json.dumps(eg, ensure_ascii=False))
+    fp.write("\n")
 
-with open('emissionMatrix.json', 'w', encoding='utf8') as fp:
-    json.dump(eg, fp, ensure_ascii=False)
+# with open('emissionMatrix.json', 'w', encoding='utf8') as fp:
+#    json.dump(eg, fp, ensure_ascii=False)
+
 
 '''with open("/Users/diptejsaner/Desktop/NLP_HMM/transitionMatrix.txt", "w") as file:
 	for node in tg:

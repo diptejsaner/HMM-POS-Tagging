@@ -4,7 +4,7 @@ from operator import itemgetter
 
 
 def get_pos_tags_viterbi(line):
-    line = line.lower()
+    #line = line.lower()
     words = line.split(' ')
     pos_tags = []
 
@@ -71,11 +71,13 @@ def tag_sentence(line, pos_tags):
 tg = {}
 eg = {}
 
-with open('transitionMatrix.json', 'r', encoding='utf8') as f:
-    tg = json.load(f)
+with open('hmmmodel.txt', 'r', encoding='utf8') as f:
+    str = f.readlines()
+    tg = json.loads(str[0])
+    eg = json.loads(str[1])
 
-with open('emissionMatrix.json', 'r', encoding='utf8') as f:
-    eg = json.load(f)
+# with open('emissionMatrix.json', 'r', encoding='utf8') as f:
+#    eg = json.load(f)
 
 outputFile = open("hmmoutput.txt", "w", encoding='utf8')
 
