@@ -10,6 +10,7 @@ line_count = 0
 word_count = 0
 
 first_tag_prob = {}
+word_set = set()
 
 for line in f:
     words = line.split(' ')
@@ -21,7 +22,8 @@ for line in f:
 
         x[0:-1] = ["/".join(x[0:-1])]
         w = x[0].lower()
-        #w = x[0]
+        # w = x[0]
+        word_set.add(w)
 
         tag = x[-1].rstrip()
 
@@ -53,11 +55,11 @@ for line in f:
         k += 1
     line_count += 1
 
-eg["q0"] = {}
-tg["q0"] = {}
+initial_transition = {}
+
 for node in first_tag_prob:
-    # first_tag_prob[node] /= line_count
-    tg["q0"][node] = first_tag_prob[node]
+    first_tag_prob[node] /= line_count
+    initial_transition[node] = first_tag_prob[node]
 
 f.close()
 
@@ -72,6 +74,25 @@ for tag in tg:
             tg[tag][ts] = 1
         else:
             tg[tag][ts] += 1
+
+'''
+for tag in eg:
+    for ts in tag_set:
+        if ts not in eg[tag]:
+            eg[tag][ts] = 1
+        else:
+            eg[tag][ts] += 1
+'''
+
+for tag in tag_set:
+    if tag in initial_transition:
+        initial_transition[tag] += 1
+        initial_transition[tag] /= len(tag_set)
+    else:
+        initial_transition[tag] = 1/len(tag_set)
+
+# get count of words from each tag
+word_count_from_tag = {}
 
 # convert to probabilities
 for tag in tg:
@@ -91,50 +112,15 @@ for tag in eg:
 
     for wd in eg[tag]:
         eg[tag][wd] /= count
-
-# print("\nNumber of lines : " + str(line_count))
-# print("\nnumber of tags found : " + str(len(tg)))
+        word_count_from_tag[tag] = count
 
 with open('hmmmodel.txt', 'w', encoding='utf8') as fp:
     fp.write(json.dumps(tg, ensure_ascii=False))
     fp.write("\n")
     fp.write(json.dumps(eg, ensure_ascii=False))
     fp.write("\n")
-
-# with open('emissionMatrix.json', 'w', encoding='utf8') as fp:
-#    json.dump(eg, fp, ensure_ascii=False)
-
-
-'''with open("/Users/diptejsaner/Desktop/NLP_HMM/transitionMatrix.txt", "w") as file:
-	for node in tg:
-		tags.append(node)
-		file.write("%s " % node)
-
-	file.write("\n")
-
-	for node in tags:
-		for adjNode in tags:
-			if adjNode in tg[node]:
-				file.write("%f " % tg[node][adjNode])
-			else:
-				file.write("%i " % 0)
-		file.write("\n")
-
-with open("/Users/diptejsaner/Desktop/NLP_HMM/emissionMatrix.txt", "w") as file:
-	for tag in tags:
-		file.write("%s " % tag)
-	file.write("\n")
-
-	for word in wordset:
-		file.write("%s " % word)
-	file.write("\n")
-
-	ind = 0
-	for node in tags:
-		ind = 0
-		for eword in wordset:
-			if eword in eg[node]:
-				file.write("%i:%f " % (ind, eg[node][eword]))
-			ind += 1
-		file.write("\n")
-'''
+    fp.write(json.dumps(initial_transition, ensure_ascii=False))
+    fp.write("\n")
+    fp.write(json.dumps(list(word_set), ensure_ascii=False))
+    fp.write("\n")
+    fp.write(json.dumps(word_count_from_tag, ensure_ascii=False))
